@@ -28,7 +28,6 @@ exports.deactivate = deactivate;
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = __importStar(require("vscode"));
-const path = __importStar(require("path"));
 const puppeteer = require('puppeteer');
 let outputChannel = vscode.window.createOutputChannel("Capture URL");
 // This method is called when your extension is activated
@@ -43,7 +42,7 @@ function activate(context) {
     const disposable = vscode.commands.registerCommand('url-capture.url-capture', () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
-        const dir = getCurrentDateFilename();
+        let dir = getActiveWorkspaceFolder();
         const filename = getCurrentDateFilename();
         const selectionText = getSelectionText();
         if (selectionText) {
@@ -62,7 +61,6 @@ function getSelectionText() {
     }
     return "";
 }
-var document;
 async function captureWebsite(url, filename) {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -76,6 +74,9 @@ async function captureWebsite(url, filename) {
     // 画面全体をキャプチャー
     await page.setViewport({ width, height });
     await page.screenshot({ path: filename });
+    outputChannel.show();
+    outputChannel.appendLine(`Capture URL: ${url}`);
+    outputChannel.appendLine(`Capture URL: ${filename}`);
     await browser.close();
 }
 function getCurrentDateFilename() {
@@ -83,16 +84,28 @@ function getCurrentDateFilename() {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    return `img_${year}${month}${day}.png`;
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `img_${year}${month}${day}_${hours}${minutes}${seconds}.png`;
 }
-function getCurrentFileDirectory() {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
+function getActiveWorkspaceFolder() {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        vscode.window.showErrorMessage('ワークスペースフォルダが開かれていません。');
         return undefined;
     }
-    const filePath = editor.document.uri.fsPath;
-    const directoryPath = path.dirname(filePath);
-    return directoryPath;
+    // アクティブなエディタのドキュメントが属するワークスペースフォルダを取得
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+        const activeDocumentUri = activeEditor.document.uri;
+        const activeWorkspaceFolder = vscode.workspace.getWorkspaceFolder(activeDocumentUri);
+        if (activeWorkspaceFolder) {
+            return activeWorkspaceFolder.uri.fsPath;
+        }
+    }
+    // アクティブなエディタがない場合、最初のワークスペースフォルダを返す
+    return workspaceFolders[0].uri.fsPath;
 }
 // This method is called when your extension is deactivated
 function deactivate() { }

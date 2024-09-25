@@ -20,7 +20,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const disposable = vscode.commands.registerCommand('url-capture.url-capture', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
-		const dir = getCurrentDateFilename();
+		let dir = getActiveWorkspaceFolder();
+	
 		const filename = getCurrentDateFilename();
 		const selectionText: string = getSelectionText();
 
@@ -46,8 +47,7 @@ function getSelectionText(): string {
 }
 
 
-
-var document: any;
+declare const document: any;
 
 async function captureWebsite(url: string, filename: string) {
 	const browser = await puppeteer.launch();
@@ -65,29 +65,43 @@ async function captureWebsite(url: string, filename: string) {
 	// 画面全体をキャプチャー
 	await page.setViewport({ width, height });
 	await page.screenshot({ path: filename });
+	outputChannel.show();
+	outputChannel.appendLine(`Capture URL: ${url}`);
+	outputChannel.appendLine(`Capture URL: ${filename}`);
    
 	await browser.close();
 }
 
 
 function getCurrentDateFilename(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `img_${year}${month}${day}.png`;
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, '0');
+	const day = String(now.getDate()).padStart(2, '0');
+	const hours = String(now.getHours()).padStart(2, '0');
+	const minutes = String(now.getMinutes()).padStart(2, '0');
+	const seconds = String(now.getSeconds()).padStart(2, '0');
+	return `img_${year}${month}${day}_${hours}${minutes}${seconds}.png`;
 }
 
-function getCurrentFileDirectory(): string | undefined {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
+function getActiveWorkspaceFolder(): string | undefined {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        vscode.window.showErrorMessage('ワークスペースフォルダが開かれていません。');
         return undefined;
     }
-    const filePath = editor.document.uri.fsPath;
-    const directoryPath = path.dirname(filePath);
-    return directoryPath;
+    // アクティブなエディタのドキュメントが属するワークスペースフォルダを取得
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+        const activeDocumentUri = activeEditor.document.uri;
+        const activeWorkspaceFolder = vscode.workspace.getWorkspaceFolder(activeDocumentUri);
+        if (activeWorkspaceFolder) {
+            return activeWorkspaceFolder.uri.fsPath;
+        }
+    }
+    // アクティブなエディタがない場合、最初のワークスペースフォルダを返す
+    return workspaceFolders[0].uri.fsPath;
 }
-
 
 
 // This method is called when your extension is deactivated

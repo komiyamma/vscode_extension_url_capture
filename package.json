@@ -1,9 +1,9 @@
 {
   "name": "url-capture",
   "publisher": "komiyamma",
-  "displayName": "url_capture",
-  "description": "Capture URL",
-  "version": "0.0.4",
+  "displayName": "URL Capture",
+  "description": "エディタで選択しているテキストをURLとみなして、そのファイルと同じフォルダに画損を保存します。\nIt considers the text selected in the editor as a URL and saves the image loss in the same folder as the file.",
+  "version": "0.0.9",
   "engines": {
     "vscode": "^1.93.0"
   },
@@ -12,10 +12,10 @@
   ],
   "activationEvents": [],
   "license": "MIT",
-  "homepage": "https://github.com/komiyamma/vscode_extension_capture_url",
+  "homepage": "https://github.com/komiyamma/vscode_extension_url_capture",
   "repository": {
     "type": "git",
-    "url": "https://github.com/komiyamma/vscode_extension_capture_url"
+    "url": "https://github.com/komiyamma/vscode_extension_url_capture"
   },
   "main": "./out/extension.js",
   "contributes": {
