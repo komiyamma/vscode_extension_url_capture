@@ -25,6 +25,10 @@ npm install -g puppeteer
 
 ## Change Log
 
+### 0.9.2
+
+ロゴの変更
+
 ### 0.9.1
 
 ```
