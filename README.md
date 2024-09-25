@@ -1,2 +1,9 @@
-# vscode_extension_web_screencap
-Webサイトを適当にいい感じにスクリーンショットを撮る
+# エディタ上で選択したテキストをURLとみなして、そこのスクリーンショットを.pngで保存する。
+
+node.js に依存するので、
+```
+npm install -g puppeteer
+```
+といった形でパスが通ったnodejsにグローバルでpuppeteerをインストールしておくこと。
+
+
