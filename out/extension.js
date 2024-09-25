@@ -28,6 +28,8 @@ exports.deactivate = deactivate;
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = __importStar(require("vscode"));
+const path = __importStar(require("path"));
+let outputChannel = vscode.window.createOutputChannel("Capture URL");
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 function activate(context) {
@@ -42,6 +44,11 @@ function activate(context) {
         // Display a message box to the user
         const filename = getCurrentDateFilename();
         const selectionText = getSelectionText();
+        let openDir = getCurrentFileDirectory();
+        if (!openDir) {
+            outputChannel.show();
+            outputChannel.append(`ファイルを開いている状態でのみ機能します\n`);
+        }
         if (selectionText) {
             // テキストにhttps:// が先頭に含まれてなければ付け加える
             const url = selectionText?.startsWith('http') ? selectionText : `https://${selectionText}`;
@@ -61,7 +68,31 @@ function getSelectionText() {
 function captureWebsite(url, filename) {
     // 外部コマンドの実行
     const exec = require('child_process').exec;
-    const command = `node capture.js ${url} ${filename}`;
+    const command = `node ${__dirname}/capture.js ${url} ${filename}`;
+    // 現在vscode開いているファイル名のディレクトリを取得
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            outputChannel.show();
+            outputChannel.append(`エラーが発生しました: ${error.message}\n`);
+            return;
+        }
+        if (stderr) {
+            outputChannel.append(`エラーが発生しました: ${stderr}\n`);
+            return;
+        }
+    });
+}
+function getCurrentFileDirectory() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return undefined;
+    }
+    const filePath = editor.document.uri.fsPath;
+    if (!filePath) {
+        return undefined;
+    }
+    const directoryPath = path.dirname(filePath);
+    return directoryPath;
 }
 function getCurrentDateFilename() {
     const now = new Date();

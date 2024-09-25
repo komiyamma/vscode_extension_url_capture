@@ -1,6 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as path from 'path';
+
+let outputChannel = vscode.window.createOutputChannel("Capture URL");
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -19,6 +22,12 @@ export function activate(context: vscode.ExtensionContext) {
 		const filename = getCurrentDateFilename();
 
 		const selectionText: string = getSelectionText();
+
+		let openDir = getCurrentFileDirectory();
+		if (!openDir) {
+			outputChannel.show();
+			outputChannel.append(`ファイルを開いている状態でのみ機能します\n`);
+		}
 
 		if (selectionText) {
 			// テキストにhttps:// が先頭に含まれてなければ付け加える
@@ -44,7 +53,34 @@ function getSelectionText(): string {
 function captureWebsite(url: string, filename: string) {
 	// 外部コマンドの実行
 	const exec = require('child_process').exec;
-	const command = `node capture.js ${url} ${filename}`;
+	const command = `node ${__dirname}/capture.js ${url} ${filename}`;
+// 現在vscode開いているファイル名のディレクトリを取得
+
+    exec(command, (error: Error | null, stdout: string, stderr: string) => {
+        if (error) {
+			outputChannel.show();
+			outputChannel.append(`エラーが発生しました: ${error.message}\n`);
+            return;
+        }
+        if (stderr) {
+            outputChannel.append(`エラーが発生しました: ${stderr}\n`);
+            return;
+        }
+    });	
+}
+
+
+function getCurrentFileDirectory(): string | undefined {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return undefined;
+    }
+    const filePath = editor.document.uri.fsPath;
+	if (!filePath) {
+        return undefined;
+	}
+    const directoryPath = path.dirname(filePath);
+    return directoryPath;
 }
 
 function getCurrentDateFilename(): string {
