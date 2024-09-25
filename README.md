@@ -12,3 +12,4 @@ npm install -g puppeteer
 といった形でパスが通ったnodejsにグローバルでpuppeteerをインストールしておくこと。
 
 
+秀丸マクロ.net

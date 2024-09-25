@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
+const puppeteer = require('puppeteer');
 
 let outputChannel = vscode.window.createOutputChannel("Capture URL");
 
@@ -19,21 +20,15 @@ export function activate(context: vscode.ExtensionContext) {
 	const disposable = vscode.commands.registerCommand('url-capture.url-capture', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
+		const dir = getCurrentDateFilename();
 		const filename = getCurrentDateFilename();
-
 		const selectionText: string = getSelectionText();
-
-		let openDir = getCurrentFileDirectory();
-		if (!openDir) {
-			outputChannel.show();
-			outputChannel.append(`ファイルを開いている状態でのみ機能します\n`);
-		}
 
 		if (selectionText) {
 			// テキストにhttps:// が先頭に含まれてなければ付け加える
 			const url = selectionText?.startsWith('http') ? selectionText : `https://${selectionText}`;
 
-			captureWebsite(url, filename);
+			captureWebsite(url, dir + "/" + filename);
 		}
 	});
 
@@ -50,38 +45,30 @@ function getSelectionText(): string {
 	return "";
 }
 
-function captureWebsite(url: string, filename: string) {
-	// 外部コマンドの実行
-	const exec = require('child_process').exec;
-	const command = `node ${__dirname}/capture.js ${url} ${filename}`;
-// 現在vscode開いているファイル名のディレクトリを取得
 
-    exec(command, (error: Error | null, stdout: string, stderr: string) => {
-        if (error) {
-			outputChannel.show();
-			outputChannel.append(`エラーが発生しました: ${error.message}\n`);
-            return;
-        }
-        if (stderr) {
-            outputChannel.append(`エラーが発生しました: ${stderr}\n`);
-            return;
-        }
-    });	
+
+var document: any;
+
+async function captureWebsite(url: string, filename: string) {
+	const browser = await puppeteer.launch();
+	const page = await browser.newPage();
+   
+	// ウェブサイトを開く
+	await page.goto(url);
+   
+	// 画面のサイズを取得
+	const { width, height } = await page.evaluate(() => {
+	  // ほとんどのサイトは1920のFull HDディスプレイの横幅をなんとなく意識している。
+	  return { width: Math.round((document.body.scrollWidth + 1920)/2), height: document.body.scrollHeight };
+	});
+   
+	// 画面全体をキャプチャー
+	await page.setViewport({ width, height });
+	await page.screenshot({ path: filename });
+   
+	await browser.close();
 }
 
-
-function getCurrentFileDirectory(): string | undefined {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        return undefined;
-    }
-    const filePath = editor.document.uri.fsPath;
-	if (!filePath) {
-        return undefined;
-	}
-    const directoryPath = path.dirname(filePath);
-    return directoryPath;
-}
 
 function getCurrentDateFilename(): string {
     const now = new Date();
@@ -90,6 +77,17 @@ function getCurrentDateFilename(): string {
     const day = String(now.getDate()).padStart(2, '0');
     return `img_${year}${month}${day}.png`;
 }
+
+function getCurrentFileDirectory(): string | undefined {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return undefined;
+    }
+    const filePath = editor.document.uri.fsPath;
+    const directoryPath = path.dirname(filePath);
+    return directoryPath;
+}
+
 
 
 // This method is called when your extension is deactivated
