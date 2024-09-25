@@ -3,7 +3,7 @@
   "publisher": "komiyamma",
   "displayName": "URL Capture",
   "description": "Select a URL in a text editor and take a web screenshot of that URL.\nエディタで選択しているテキストをURLとみなして、そのファイルと同じフォルダに画損を保存します。",
-  "version": "0.0.9",
+  "version": "0.9.1",
   "engines": {
     "vscode": "^1.93.0"
   },
