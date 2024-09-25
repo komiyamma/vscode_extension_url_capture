@@ -7,6 +7,8 @@
 エディタ上で選択したテキストをURLとみなして、そこのスクリーンショットを.pngで保存する。  
 保存先は、テキストを書いたファイルと同じフォルダです。
 
+URLとみなしてアクセスして2.5秒以上結果が返ってこない場合は、保存処理を諦めます。
+
 ## マーケットプレイス
 [url-cature](https://marketplace.visualstudio.com/items?itemName=komiyamma.url-capture) で公開されています。
 
