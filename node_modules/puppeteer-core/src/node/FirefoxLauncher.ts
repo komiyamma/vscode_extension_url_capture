@@ -15,10 +15,7 @@ import {debugError} from '../common/util.js';
 import {assert} from '../util/assert.js';
 
 import {BrowserLauncher, type ResolvedLaunchArgs} from './BrowserLauncher.js';
-import type {
-  BrowserLaunchArgumentOptions,
-  PuppeteerNodeLaunchOptions,
-} from './LaunchOptions.js';
+import type {LaunchOptions} from './LaunchOptions.js';
 import type {PuppeteerNode} from './PuppeteerNode.js';
 import {rm} from './util/fs.js';
 
@@ -32,7 +29,7 @@ export class FirefoxLauncher extends BrowserLauncher {
 
   static getPreferences(
     extraPrefsFirefox?: Record<string, unknown>,
-    protocol?: 'cdp' | 'webDriverBiDi'
+    protocol?: 'cdp' | 'webDriverBiDi',
   ): Record<string, unknown> {
     return {
       ...extraPrefsFirefox,
@@ -65,7 +62,7 @@ export class FirefoxLauncher extends BrowserLauncher {
    * @internal
    */
   override async computeLaunchArguments(
-    options: PuppeteerNodeLaunchOptions = {}
+    options: LaunchOptions = {},
   ): Promise<ResolvedLaunchArgs> {
     const {
       ignoreDefaultArgs = false,
@@ -83,7 +80,7 @@ export class FirefoxLauncher extends BrowserLauncher {
       firefoxArguments.push(
         ...this.defaultArgs(options).filter(arg => {
           return !ignoreDefaultArgs.includes(arg);
-        })
+        }),
       );
     } else {
       firefoxArguments.push(...args);
@@ -97,7 +94,7 @@ export class FirefoxLauncher extends BrowserLauncher {
       if (pipe) {
         assert(
           debuggingPort === null,
-          'Browser should be launched with either pipe or debugging port - not both.'
+          'Browser should be launched with either pipe or debugging port - not both.',
         );
       }
       firefoxArguments.push(`--remote-debugging-port=${debuggingPort || 0}`);
@@ -131,7 +128,7 @@ export class FirefoxLauncher extends BrowserLauncher {
       path: userDataDir,
       preferences: FirefoxLauncher.getPreferences(
         extraPrefsFirefox,
-        options.protocol
+        options.protocol,
       ),
     });
 
@@ -139,11 +136,11 @@ export class FirefoxLauncher extends BrowserLauncher {
     if (this.puppeteer._isPuppeteerCore || executablePath) {
       assert(
         executablePath,
-        `An \`executablePath\` must be specified for \`puppeteer-core\``
+        `An \`executablePath\` must be specified for \`puppeteer-core\``,
       );
       firefoxExecutable = executablePath;
     } else {
-      firefoxExecutable = this.executablePath();
+      firefoxExecutable = this.executablePath(undefined);
     }
 
     return {
@@ -159,7 +156,7 @@ export class FirefoxLauncher extends BrowserLauncher {
    */
   override async cleanUserDataDir(
     userDataDir: string,
-    opts: {isTemp: boolean}
+    opts: {isTemp: boolean},
   ): Promise<void> {
     if (opts.isTemp) {
       try {
@@ -181,7 +178,7 @@ export class FirefoxLauncher extends BrowserLauncher {
               await unlink(prefsPath);
               await rename(prefsBackupPath, prefsPath);
             }
-          })
+          }),
         );
         for (const result of results) {
           if (result.status === 'rejected') {
@@ -194,11 +191,14 @@ export class FirefoxLauncher extends BrowserLauncher {
     }
   }
 
-  override executablePath(): string {
-    return this.resolveExecutablePath();
+  override executablePath(_: unknown, validatePath = true): string {
+    return this.resolveExecutablePath(
+      undefined,
+      /* validatePath=*/ validatePath,
+    );
   }
 
-  override defaultArgs(options: BrowserLaunchArgumentOptions = {}): string[] {
+  override defaultArgs(options: LaunchOptions = {}): string[] {
     const {
       devtools = false,
       headless = !devtools,

@@ -7,7 +7,6 @@ import { stringToTypedArray } from '../util/encoding.js';
  * @internal
  */
 export class CdpHTTPResponse extends HTTPResponse {
-    #client;
     #request;
     #contentPromise = null;
     #bodyLoadedDeferred = Deferred.create();
@@ -20,9 +19,8 @@ export class CdpHTTPResponse extends HTTPResponse {
     #headers = {};
     #securityDetails;
     #timing;
-    constructor(client, request, responsePayload, extraInfo) {
+    constructor(request, responsePayload, extraInfo) {
         super();
-        this.#client = client;
         this.#request = request;
         this.#remoteAddress = {
             ip: responsePayload.remoteIPAddress,
@@ -49,7 +47,7 @@ export class CdpHTTPResponse extends HTTPResponse {
             return;
         }
         const firstLine = extraInfo.headersText.split('\r', 1)[0];
-        if (!firstLine) {
+        if (!firstLine || firstLine.length > 1_000) {
             return;
         }
         const match = firstLine.match(/[^ ]* [^ ]* (.*)/);
@@ -95,7 +93,9 @@ export class CdpHTTPResponse extends HTTPResponse {
                 .valueOrThrow()
                 .then(async () => {
                 try {
-                    const response = await this.#client.send('Network.getResponseBody', {
+                    // Use CDPSession from corresponding request to retrieve body, as it's client
+                    // might have been updated (e.g. for an adopted OOPIF).
+                    const response = await this.#request.client.send('Network.getResponseBody', {
                         requestId: this.#request.id,
                     });
                     return stringToTypedArray(response.body, response.base64Encoded);
