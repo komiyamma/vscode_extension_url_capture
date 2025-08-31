@@ -1,3 +1,5 @@
+[To English Version README](README.md)
+
 # Url Capture
 
 [![URL Capture v0.9.2](https://img.shields.io/badge/URL_Capture-v0.9.2-6479ff.svg)](https://github.com/komiyamma/vscode_extension_capture_url)
