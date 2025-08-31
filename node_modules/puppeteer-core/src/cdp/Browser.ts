@@ -21,6 +21,7 @@ import {BrowserContextEvent} from '../api/BrowserContext.js';
 import {CDPSessionEvent, type CDPSession} from '../api/CDPSession.js';
 import type {Page} from '../api/Page.js';
 import type {Target} from '../api/Target.js';
+import type {DownloadBehavior} from '../common/DownloadBehavior.js';
 import type {Viewport} from '../common/Viewport.js';
 
 import {CdpBrowserContext} from './BrowserContext.js';
@@ -49,11 +50,12 @@ export class CdpBrowser extends BrowserBase {
     contextIds: string[],
     acceptInsecureCerts: boolean,
     defaultViewport?: Viewport | null,
+    downloadBehavior?: DownloadBehavior,
     process?: ChildProcess,
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
     isPageTargetCallback?: IsPageTargetCallback,
-    waitForInitiallyDiscoveredTargets = true
+    waitForInitiallyDiscoveredTargets = true,
   ): Promise<CdpBrowser> {
     const browser = new CdpBrowser(
       product,
@@ -64,14 +66,14 @@ export class CdpBrowser extends BrowserBase {
       closeCallback,
       targetFilterCallback,
       isPageTargetCallback,
-      waitForInitiallyDiscoveredTargets
+      waitForInitiallyDiscoveredTargets,
     );
     if (acceptInsecureCerts) {
       await connection.send('Security.setIgnoreCertificateErrors', {
         ignore: true,
       });
     }
-    await browser._attach();
+    await browser._attach(downloadBehavior);
     return browser;
   }
   #defaultViewport?: Viewport | null;
@@ -93,7 +95,7 @@ export class CdpBrowser extends BrowserBase {
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
     isPageTargetCallback?: IsPageTargetCallback,
-    waitForInitiallyDiscoveredTargets = true
+    waitForInitiallyDiscoveredTargets = true,
   ) {
     super();
     product = product || 'chrome';
@@ -111,21 +113,21 @@ export class CdpBrowser extends BrowserBase {
       this.#targetManager = new FirefoxTargetManager(
         connection,
         this.#createTarget,
-        this.#targetFilterCallback
+        this.#targetFilterCallback,
       );
     } else {
       this.#targetManager = new ChromeTargetManager(
         connection,
         this.#createTarget,
         this.#targetFilterCallback,
-        waitForInitiallyDiscoveredTargets
+        waitForInitiallyDiscoveredTargets,
       );
     }
     this.#defaultContext = new CdpBrowserContext(this.#connection, this);
     for (const contextId of contextIds) {
       this.#contexts.set(
         contextId,
-        new CdpBrowserContext(this.#connection, this, contextId)
+        new CdpBrowserContext(this.#connection, this, contextId),
       );
     }
   }
@@ -134,23 +136,26 @@ export class CdpBrowser extends BrowserBase {
     this.emit(BrowserEvent.Disconnected, undefined);
   };
 
-  async _attach(): Promise<void> {
+  async _attach(downloadBehavior: DownloadBehavior | undefined): Promise<void> {
     this.#connection.on(CDPSessionEvent.Disconnected, this.#emitDisconnected);
+    if (downloadBehavior) {
+      await this.#defaultContext.setDownloadBehavior(downloadBehavior);
+    }
     this.#targetManager.on(
       TargetManagerEvent.TargetAvailable,
-      this.#onAttachedToTarget
+      this.#onAttachedToTarget,
     );
     this.#targetManager.on(
       TargetManagerEvent.TargetGone,
-      this.#onDetachedFromTarget
+      this.#onDetachedFromTarget,
     );
     this.#targetManager.on(
       TargetManagerEvent.TargetChanged,
-      this.#onTargetChanged
+      this.#onTargetChanged,
     );
     this.#targetManager.on(
       TargetManagerEvent.TargetDiscovered,
-      this.#onTargetDiscovered
+      this.#onTargetDiscovered,
     );
     await this.#targetManager.initialize();
   }
@@ -159,19 +164,19 @@ export class CdpBrowser extends BrowserBase {
     this.#connection.off(CDPSessionEvent.Disconnected, this.#emitDisconnected);
     this.#targetManager.off(
       TargetManagerEvent.TargetAvailable,
-      this.#onAttachedToTarget
+      this.#onAttachedToTarget,
     );
     this.#targetManager.off(
       TargetManagerEvent.TargetGone,
-      this.#onDetachedFromTarget
+      this.#onDetachedFromTarget,
     );
     this.#targetManager.off(
       TargetManagerEvent.TargetChanged,
-      this.#onTargetChanged
+      this.#onTargetChanged,
     );
     this.#targetManager.off(
       TargetManagerEvent.TargetDiscovered,
-      this.#onTargetDiscovered
+      this.#onTargetDiscovered,
     );
   }
 
@@ -200,22 +205,25 @@ export class CdpBrowser extends BrowserBase {
   }
 
   override async createBrowserContext(
-    options: BrowserContextOptions = {}
+    options: BrowserContextOptions = {},
   ): Promise<CdpBrowserContext> {
-    const {proxyServer, proxyBypassList} = options;
+    const {proxyServer, proxyBypassList, downloadBehavior} = options;
 
     const {browserContextId} = await this.#connection.send(
       'Target.createBrowserContext',
       {
         proxyServer,
         proxyBypassList: proxyBypassList && proxyBypassList.join(','),
-      }
+      },
     );
     const context = new CdpBrowserContext(
       this.#connection,
       this,
-      browserContextId
+      browserContextId,
     );
+    if (downloadBehavior) {
+      await context.setDownloadBehavior(downloadBehavior);
+    }
     this.#contexts.set(browserContextId, context);
     return context;
   }
@@ -240,7 +248,7 @@ export class CdpBrowser extends BrowserBase {
 
   #createTarget = (
     targetInfo: Protocol.Target.TargetInfo,
-    session?: CDPSession
+    session?: CDPSession,
   ) => {
     const {browserContextId} = targetInfo;
     const context =
@@ -260,7 +268,7 @@ export class CdpBrowser extends BrowserBase {
       session,
       context,
       this.#targetManager,
-      createSession
+      createSession,
     );
     if (targetInfo.url?.startsWith('devtools://')) {
       return new DevToolsTarget(
@@ -269,7 +277,7 @@ export class CdpBrowser extends BrowserBase {
         context,
         this.#targetManager,
         createSession,
-        this.#defaultViewport ?? null
+        this.#defaultViewport ?? null,
       );
     }
     if (this.#isPageTargetCallback(otherTarget)) {
@@ -279,7 +287,7 @@ export class CdpBrowser extends BrowserBase {
         context,
         this.#targetManager,
         createSession,
-        this.#defaultViewport ?? null
+        this.#defaultViewport ?? null,
       );
     }
     if (
@@ -291,7 +299,7 @@ export class CdpBrowser extends BrowserBase {
         session,
         context,
         this.#targetManager,
-        createSession
+        createSession,
       );
     }
     return otherTarget;
@@ -358,7 +366,7 @@ export class CdpBrowser extends BrowserBase {
     const page = await target.page();
     if (!page) {
       throw new Error(
-        `Failed to create a page for context (id = ${contextId})`
+        `Failed to create a page for context (id = ${contextId})`,
       );
     }
     return page;
@@ -366,7 +374,7 @@ export class CdpBrowser extends BrowserBase {
 
   override targets(): CdpTarget[] {
     return Array.from(
-      this.#targetManager.getAvailableTargets().values()
+      this.#targetManager.getAvailableTargets().values(),
     ).filter(target => {
       return (
         target._isTargetExposed() &&
