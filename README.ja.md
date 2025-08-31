@@ -1,0 +1,46 @@
+# Url Capture
+
+[![URL Capture v0.9.2](https://img.shields.io/badge/URL_Capture-v0.9.2-6479ff.svg)](https://github.com/komiyamma/vscode_extension_capture_url)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
+
+## 概要
+
+エディタ上で選択したテキストをURLとみなして、そこのスクリーンショットを.pngで保存する。  
+保存先は、テキストを書いたファイルと同じフォルダです。
+
+URLとみなしてアクセスして2.5秒以上結果が返ってこない場合は、保存処理を諦めます。
+
+
+## 利用の前に
+
+```
+npm install -g puppeteer
+```
+
+をしてください。
+
+## マーケットプレイス
+[url-cature](https://marketplace.visualstudio.com/items?itemName=komiyamma.url-capture) で公開されています。
+
+## Change Log
+
+### 0.9.3
+
+puppeteerのバージョンを更新したことで、キャプチャー時に「白い画面」が出ていた不具合が無くなった。
+
+### 0.9.2
+
+ロゴの変更
+
+### 0.9.1
+
+```
+npm install -g puppeteer
+```
+
+が必要なことを追記しました。
+
+### 0.9.0
+
+初版
