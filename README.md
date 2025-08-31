@@ -1,42 +1,45 @@
 # Url Capture
 
-[![URL Capture v0.9.2](https://img.shields.io/badge/URL_Capture-v0.9.2-6479ff.svg)](https://github.com/komiyamma/vscode_extension_capture_url)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/komiyamma.url-capture?color=4094ff)](https://marketplace.visualstudio.com/items?itemName=komiyamma.url-capture)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 ![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
 
-## 概要
+## Overview
 
-エディタ上で選択したテキストをURLとみなして、そこのスクリーンショットを.pngで保存する。  
-保存先は、テキストを書いたファイルと同じフォルダです。
+This extension treats the selected text in the editor as a URL and saves a screenshot of that page as a .png file.
+The screenshot is saved in the same folder as the file where the text was selected.
 
-URLとみなしてアクセスして2.5秒以上結果が返ってこない場合は、保存処理を諦めます。
+If the URL does not respond within 2.5 seconds, the save process will be aborted.
 
-
-## 利用の前に
+## Before Use
 
 ```
 npm install -g puppeteer
 ```
 
-をしてください。
+Please run the above command before using this extension.
 
-## マーケットプレイス
-[url-cature](https://marketplace.visualstudio.com/items?itemName=komiyamma.url-capture) で公開されています。
+## Marketplace
+Available at [url-cature](https://marketplace.visualstudio.com/items?itemName=komiyamma.url-capture).
 
 ## Change Log
 
+### 0.9.3
+
+Updated the version of puppeteer, which fixed the issue where a "white screen" would appear during capture.
+
 ### 0.9.2
 
-ロゴの変更
+Changed the logo.
 
 ### 0.9.1
 
+Added a note that
 ```
 npm install -g puppeteer
 ```
-
-が必要なことを追記しました。
+is required.
 
 ### 0.9.0
 
-初版
+Initial release.
