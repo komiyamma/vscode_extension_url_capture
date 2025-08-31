@@ -1,5 +1,9 @@
 # Change Log
 
+### 0.9.4
+
+Fixed an issue where the version badge was not reflected.
+
 ### 0.9.3
 
 Updated the version of puppeteer, which fixed the issue where a "white screen" would appear during capture.
