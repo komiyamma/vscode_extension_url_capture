@@ -1,3 +1,5 @@
+[To Japanese Version README](README.ja.md)
+
 # Url Capture
 
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/komiyamma.url-capture?color=4094ff)](https://marketplace.visualstudio.com/items?itemName=komiyamma.url-capture)
