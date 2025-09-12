@@ -1,8 +1,12 @@
 # Change Log
 
+### 0.9.6
+
+Added localization for the extension description using `package.nls.json` and `package.nls.ja.json`. No behavior changes.
+
 ### 0.9.5
 
-仕組みの整理のみ。挙動は変化せず。
+Internal reorganization only. Behavior remains unchanged.
 
 ### 0.9.4
 

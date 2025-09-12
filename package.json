@@ -2,8 +2,8 @@
   "name": "url-capture",
   "publisher": "komiyamma",
   "displayName": "URL Capture",
-  "description": "The 'text selected in the editing area' will be treated as a URL and 'saved in the same folder as the file.'\n「編集エリアで選択したテキスト」をURLとみなして、「そのファイルと同じフォルダに画損を保存」します。",
-  "version": "0.9.5",
+  "description": "%description%",
+  "version": "0.9.6",
   "engines": {
     "vscode": "^1.93.0"
   },
