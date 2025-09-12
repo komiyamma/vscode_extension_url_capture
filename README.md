@@ -2,7 +2,7 @@
 
 # Url Capture
 
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/komiyamma.url-capture?color=4094ff)](https://marketplace.visualstudio.com/items?itemName=komiyamma.url-capture)
+[![URL Capture v0.9.5](https://img.shields.io/badge/URL_Capture-v0.9.5-6479ff.svg)](https://github.com/komiyamma/vscode_extension_capture_url)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 ![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
 
