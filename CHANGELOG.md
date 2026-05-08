@@ -1,5 +1,9 @@
 # Change Log
 
+### 0.9.7
+
+Exclude local `logo/` directory from packaging and update the extension icon (`resources/icons/logo.png`). No behavior changes.
+
 ### 0.9.6
 
 Added localization for the extension description using `package.nls.json` and `package.nls.ja.json`. No behavior changes.

@@ -1,5 +1,9 @@
 # Change Log
 
+### 0.9.7
+
+`.vscodeignore` を更新して `logo/` をパッケージから除外し、拡張機能のアイコン（`resources/icons/logo.png`）を更新しました。挙動の変更はありません。
+
 ### 0.9.6
 
 拡張機能の説明文のローカライズに対応（`package.nls.json` と `package.nls.ja.json` を追加）。挙動の変更なし。
